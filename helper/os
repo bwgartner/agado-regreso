@@ -1,0 +1,66 @@
+##
+# Helper function(s)
+#
+#	  ____  _____
+#	 / __ \/ ___/
+#	/ /_/ (__  ) 
+#	\____/____/  
+#
+##
+
+function prep {
+
+  if [ ! -d ${logDir} ]
+    then
+	mkdir -p ${logDir}|| {
+		echo "Unable to create ${logDir}"
+		exit 1
+	}
+  fi
+
+  if [ ! -d ${cacheDir} ]
+    then
+	mkdir -p ${cacheDir}|| {
+		echo "Unable to create ${cacheDir}"
+		exit 1
+	}
+  fi
+
+  discover
+
+}
+
+function discover {
+
+  distro=$(grep '^NAME=' /etc/os-release |cut -d\" -f2)
+
+  case $distro in
+	SLES)
+		osSUSE ;;
+
+	"openSUSE Leap" | "openSUSE Tumbleweed" )
+		osopenSUSE ;;
+        *)
+		echo "Not yet supported : ${distro}"
+		exit 1
+		;;
+  esac
+
+}
+
+function osSUSE {
+
+  pkgMgr="zypper"
+  supportUtilPkg="supportutils"
+  supportUtil="supportconfig"
+
+}
+
+function osopenSUSE {
+
+  pkgMgr="zypper"
+  supportUtilPkg="supportutils"
+  supportUtil="supportconfig"
+
+}
+             

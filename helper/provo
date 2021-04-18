@@ -1,0 +1,46 @@
+##
+# Helper function(s)
+#
+#	    ____  _________ _   ______ 
+#	   / __ \/ ___/ __ \ | / / __ \
+#	  / /_/ / /  / /_/ / |/ / /_/ /
+#	 / .___/_/   \____/|___/\____/ 
+#	/_/                            
+#
+##
+
+function mmtests_tc {
+
+  [ -e ${mmtestsTC} ] && {
+	for testCase in $(cat ${mmtestsTC})
+	    do
+		cd ${mmtestsDir}
+		[ -L ${mmtestsLog}/SCOPE ] || ln -s ${cacheDir}/SCOPE ${mmtestsLog}/SCOPE
+		[ -L ${mmtestsLog}/TESTCASE ] || ln -s ${cacheDir}/TESTCASE ${mmtestsLog}/TESTCASE
+
+		# check if already run
+		  [ -d ${mmtestsLog}/${testCase}/${scopeSuf} ] && continue
+
+		# denote scope / target test case
+		  echo "${scopeSuf}" > ${mmtestsLog}/SCOPE
+		  echo "${testCase}" > ${mmtestsLog}/TESTCASE
+		  echo -n "Scope - ${scopeSuf} : " 
+		  echo -n " TestCase - ${testCase} ... "
+
+		# run target test case
+		  OF=${logDir}/mmtests-${testCase}-${scopeSuf}
+		  echo "# $(date +"%Y-%m-%dT%H:%M:%S")" >> ${OF}
+		  ${mmtestsDir}/run-mmtests.sh \
+			  --no-monitor \
+			  --config configs/${testCase} \
+			  ${testCase}/${scopeSuf} \
+			  >> ${OF} 2>&1 && echo "[x]" || echo "[failed]"
+
+		# return to a consistent state for next test case run (via systemd timer)
+		  clone
+		  systemctl reboot && exit 0
+	
+	    done
+  }
+
+}

@@ -1,0 +1,7 @@
+[Unit]
+Description=Agado-Regreso (Performance Regression) Testing
+
+[Service]
+Type=oneshot
+# match the change directory path to match where git clone of this project is
+ExecStart=/usr/bin/sh -c 'cd /tmp/agado-regreso && ./bin/ripeti'

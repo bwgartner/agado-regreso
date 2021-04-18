@@ -1,0 +1,10 @@
+# agado-regreso
+[Unit] 
+Description=Runs the next performance regression test case within the Scope
+
+[Timer] 
+OnBootSec=2 m 
+Unit=agado-regreso.service 
+
+[Install] 
+WantedBy=basic.target

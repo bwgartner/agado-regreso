@@ -1,0 +1,108 @@
+#! /bin/sh
+
+## Import tiered configuration settings
+  CF=agado-regreso.conf
+  [ -r /usr/etc/${CF} ] && source /usr/etc/${CF}
+  [ -r /etc/${CF} ] && source /etc/${CF}
+  [ -r ./${CF} ] && source ./${CF}
+
+## Source and use helper functions
+   for HF in os provo transporto
+     do
+	[ -r ${functionDir}/helper/${HF} ] && source ${functionDir}/helper/${HF}
+	[ -r ./helper/${HF} ] && source ./helper/${HF}
+     done
+   prep
+
+## Usage 
+
+  # invocation, should be run as root (or via sudo)
+  if [ "$UID" != "0" ]
+    then
+        echo "Requires root (or sudo) privileges to run $0" >&2
+        exit 1
+  fi
+
+  # set default scope
+  if [ $# -eq 1 ]
+    then
+	scopeID="${1}"
+    else
+	scopeID=$(uname -r)
+        kernelVER=${scopeID%%-default}
+	kernelPKG=$(rpm -aq | grep kernel-default | sort -nr | head -1)
+
+	# validate kernel rpm is the one running
+	if $(! echo ${kernelPKG} | grep ${kernelVER} >/dev/null 2>&1)
+	  then
+		kolekti
+		systemctl reboot && exit 0
+	fi
+  fi
+  scopeSuf="${scopeID}"
+
+## run respective test cases
+
+  # mmtests
+  [ $(echo ${mmtests} | tr '[:upper:]' '[:lower:]') = "y" ] && {
+	if [ -d ${mmtestsDir} ]
+	  then
+		  mmtests_tc
+	  else
+		echo "Try git clone mmtests, adjust configuration for location"
+		exit 1
+	fi
+  }
+
+  # next test suite (TBD)
+
+## prepare system, with updates, for next test runs
+
+  kernelID=$(uname -r)
+  kernelVER=${kernelID%%-default}
+  kernelPKG=$(rpm -aq | grep kernel-default | grep ${kernelVER})
+  kernelBN=${kernelPKG%%-${kernelVER}*}
+
+  # prepare for maintenance updates
+    kernelTS=$(rpm -aqi ${kernelBN} | grep "^Source Timestamp:" | sort -nr | head -1 | awk '{print $3}')
+
+    [ "${scopeSuf}" = "$(uname -r)" ] && {
+	echo ${kernelTS} > ${cacheDir}/KERNELTIMESTAMP
+    }
+
+  # apply maintenance updates in timerange of current kernel
+    for muType in security recommended
+      do
+	kernelTS=$(cat ${cacheDir}/KERNELTIMESTAMP)
+	scopeNext="$(uname -r)-mu-${muType}-${kernelTS}"
+	[ -s ${logDir}/${scopeNext} ] || {
+		zypper lp --date ${kernelTS} --category ${muType} > ${logDir}/${scopeNext} && \
+		zypper patch -y --date ${kernelTS} --category ${muType} >> ${logDir}/${scopeNext} && \
+		echo ${scopeNext} > ${cacheDir}/SCOPE && \
+		kolekti && \
+		systemctl reboot && exit 0
+	}
+      done
+
+  # apply kernel upgrade
+    for kernelUP in $(zypper se -s --match-exact ${kernelBN} | awk -F'|' '{print $4}')
+      do
+	echo ${kernelUP}
+	# [ -n "${kernelUP}" ] && continue
+	[ "${kernelUP}" = "Version" ] && continue
+	if $( echo ${kernelUP} | grep ${kernelVER} >/dev/null 2>&1)
+	  then
+		break
+	  else
+		kernelNEXT=${kernelUP}
+	fi
+      done
+
+    zypper install -y ${kernelBN}=${kernelNEXT} > ${logDir}/${kernelNEXT} && \
+	rm -f ${cacheDir}/KERNELTIMESTAMP 2>/dev/null && \
+  	rm -f ${cacheDir}/SCOPE 2>/dev/null && \
+  	rm -f ${cacheDir}/TESTCASE 2>/dev/null && \
+	kolekti && \
+  	systemctl reboot && exit 0
+
+exit 0
