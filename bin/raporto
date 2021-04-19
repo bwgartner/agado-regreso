@@ -1,1 +1,41 @@
-/root/bin/raporto
+#! /bin/sh
+
+## Import tiered configuration settings
+  CF=agado-regreso.conf
+  [ -r /usr/etc/${CF} ] && source /usr/etc/${CF}
+  [ -r /etc/${CF} ] && source /etc/${CF}
+  [ -r ./${CF} ] && source ./${CF}
+
+## Source and use helper functions
+   for HF in os provo raporto transporto
+     do
+        [ -r ${functionDir}/helper/${HF} ] && source ${functionDir}/helper/${HF}
+        [ -r ./helper/${HF} ] && source ./helper/${HF}
+     done
+   prep
+
+## Usage
+
+  # invocation, should be run as root (or via sudo)
+  if [ "$UID" != "0" ]
+    then
+        echo "Requires root (or sudo) privileges to run $0" >&2
+        exit 1
+  fi
+
+
+## report on respective test suites
+
+  # mmtests
+  [ $(echo ${mmtests} | tr '[:upper:]' '[:lower:]') = "y" ] && {
+        if [ -d ${mmtestsDir} ]
+          then
+                  mmtests_report
+          else
+		echo "nothing to compare or report for mmtests"
+                exit 1
+        fi
+  }
+
+exit 0
+

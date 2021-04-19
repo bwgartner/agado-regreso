@@ -7,7 +7,7 @@
   [ -r ./${CF} ] && source ./${CF}
 
 ## Source and use helper functions
-   for HF in os provo transporto
+   for HF in os provo raporto transporto
      do
         [ -r ${functionDir}/helper/${HF} ] && source ${functionDir}/helper/${HF}
         [ -r ./helper/${HF} ] && source ./helper/${HF}

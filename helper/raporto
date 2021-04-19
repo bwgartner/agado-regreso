@@ -1,0 +1,53 @@
+##
+# Helper function(s)
+#
+#	                                __      
+#	   _________ _____  ____  _____/ /_____ 
+#	  / ___/ __ `/ __ \/ __ \/ ___/ __/ __ \
+#	 / /  / /_/ / /_/ / /_/ / /  / /_/ /_/ /
+#	/_/   \__,_/ .___/\____/_/   \__/\____/ 
+#	          /_/                           
+#
+##
+
+function mmtests_report {
+
+  [ -e ${mmtestsTC} ] && {
+
+    cd ${mmtestsLog}
+    oDir="html-$(ls -d -l --time-style=+"%Y-%m-%dT%H:%M:%S" ${mmtestsLog} | cut -d' ' -f 6)"
+
+    # general (test table) overview
+      echo -n "Report : summary ... "
+      [ -d ${oDir} ] || mkdir ${oDir}
+      ../../../compare-kernels.sh \
+	--format html \
+	--output-dir ${oDir} \
+	> ${oDir}/index.html 2> ${oDir}/stderr && {
+		echo "[x]"
+		echo " see ${mmtestsLog}/${oDir}/index.html"
+	} || echo "[failed]"
+
+    # per test case with graphics
+	for testCase in $(cat ${mmtestsTC})
+	  do
+		if [ $(ls ${mmtestsLog}/${testCase} | wc -l 2>/dev/null) -gt 1 ]
+		  then
+			echo -n "Report : ${testCase} ... "
+			cd ${mmtestsLog}/${testCase}
+			[ -d ${oDir} ] || mkdir ${oDir}
+			../../../../compare-kernels.sh \
+				--format html \
+				--output-dir ${oDir} \
+				> ${oDir}/index.html 2> ${oDir}/stderr && {
+					echo "[x]"
+					echo " see ${mmtestsLog}/${testCase}/${oDir}/index.html"
+				} || echo "[failed]"
+			cd ${mmtestsLog}
+		  #else
+			#break
+		fi
+
+	  done
+  }
+}
