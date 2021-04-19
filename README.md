@@ -56,15 +56,17 @@ Test Case/Suite and Reporting automation for performance regression test suites
    - rm /tmp/agado-regreso/cache/KERNELTIMESTAMP
    - reboot, and SUT should upgrade the kernel, reboot and start the test cycle over
 
-## Process on reporting node *( Coming soon ... WIP )*
+## Process on reporting node
 
 1. Install a system/VM/node with operating system
-   - git clone agado-regreso repo (and adjust conf file)
-   - setup NFS mount of the transportDir (to access the SUT results)
-   - git clone mmtest repo (and adjust conf file)
-     - install the following packages for reporting ... *( TBD )*
+   - git clone mmtest repo
+     - install the following packages ... wget, gnuplot, perl-List-BinarySearch, perl-List-BinarySearch-XS, perl-Cpanel-JSON-X, R-rjson
+   - git clone agado-regreso repo, adjusting config file
+     - to match landing spot ( functionDir )
+     - to match where mmtest landed ( mmtestsDir, mmtestsLog )
+   - setup NFS mount ( static / dynamic ) of the cached - transportDir (to access the SUT results)
 
 2. Run reports
-   - /tmp/agado-regreso/bin/raporto
+   - cd /tmp/agado-regreso ; ./bin/raporto
 
 Feel free to file issues, submit pull requests or contact me with your feedback/suggestions
