@@ -71,7 +71,14 @@
     }
 
   # apply maintenance updates in timerange of current kernel
-    for muType in security recommended
+
+    # gate maintenance update types
+      MU=""
+      [ $(echo ${muSec=} | tr '[:upper:]' '[:lower:]') = "y" ] && MU+=" security "
+      [ $(echo ${muRec=} | tr '[:upper:]' '[:lower:]') = "y" ] && MU+=" recommended "
+
+    # iterate through maintenance updates
+    for muType in ${MU}
       do
 	kernelTS=$(cat ${cacheDir}/KERNELTIMESTAMP)
 	scopeNext="$(uname -r)-mu-${muType}-${kernelTS}"
@@ -98,11 +105,14 @@
 	fi
       done
 
-    zypper install -y ${kernelBN}=${kernelNEXT} > ${logDir}/${kernelNEXT} && \
-	rm -f ${cacheDir}/KERNELTIMESTAMP 2>/dev/null && \
-  	rm -f ${cacheDir}/SCOPE 2>/dev/null && \
-  	rm -f ${cacheDir}/TESTCASE 2>/dev/null && \
-	kolekti && \
-  	systemctl reboot && exit 0
+  # gate maintenance update types
+    [ $(echo ${kUp=} | tr '[:upper:]' '[:lower:]') = "y" ] &&  {
+	zypper install -y ${kernelBN}=${kernelNEXT} > ${logDir}/${kernelNEXT} && \
+		rm -f ${cacheDir}/KERNELTIMESTAMP 2>/dev/null && \
+  		rm -f ${cacheDir}/SCOPE 2>/dev/null && \
+  		rm -f ${cacheDir}/TESTCASE 2>/dev/null && \
+		kolekti && \
+  		systemctl reboot && exit 0
+    }
 
 exit 0

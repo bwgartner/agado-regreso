@@ -21,7 +21,7 @@ Test Case/Suite and Reporting automation for performance regression test suites
    - install additional packages - wget, git-core, gcc, gcc-c++, rsync, supportutils
    - ensure update repos are disabled during installation and also post-install (zypper modifyrepo -d repoName )
 
-2. Clone this GitHub repository ( git clone https://bwgartner/agado-regreso )
+2. Clone this GitHub repository ( git clone https://github.com/bwgartner/agado-regreso )
    - suggest dropping into /tmp
    - validate all settings ( in agado-regreso.conf )
    - enable transport and setup transportDir, suggest creating an NFS mount, in /etc/fstab via serverHost:/path transportDir nfs user,noauto 0 0
@@ -30,7 +30,7 @@ Test Case/Suite and Reporting automation for performance regression test suites
    - suggest dropping into /tmp ( otherwise you can edit agado-regreso.conf )
    - select the desired test cases ( place /tmp/mmtests/work/log/testCase.list )     - see sample set in /tmp/agado-regreso/cache/mmtests-testCase.list or just setup a single one until the update repos are re-enabled
    - validate with a sample run
-   - cd /tmp/mmtests ; mmtests --no-monitor --config ./config stream
+   - cd /tmp/mmtests ; ./run-mmtests.sh --no-monitor --config ./config stream
 
 4. Do a manual wrapper run
    - cd /tmp/agado-regreso ; sh -x ./bin/agado-regreso
