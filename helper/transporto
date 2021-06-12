@@ -11,67 +11,72 @@
 
 function clone {
 
-  if [ ! -d ${transportDir} ]
-    then
-	mkdir -p ${transportDir}|| {
-		echo "Unable to create ${transportDir}"
-		exit 1
-	}
-  fi
+  [ $(echo ${transport} | tr '[:upper:]' '[:lower:]') = "y" ] && {
+
+	if [ ! -d ${transportDir} ]
+	  then
+		mkdir -p ${transportDir}|| {
+			echo "Unable to create ${transportDir}"
+			exit 1
+		}
+	fi
 
   if mount ${transportDir} >/dev/null 2>&1
     then
 
 	# if desired, collect auxilliary support metrics
-	  kolekti
+	kolekti
 	
 	# setup, validate destination
-	  cloneDir=${transportDir}/$(cat /etc/machine-id)
-	  [ -d ${cloneDir} ] || {
+	cloneDir=${transportDir}/$(cat /etc/machine-id)
+	[ -d ${cloneDir} ] || {
 		mkdir -p ${cloneDir} >/dev/null 2>&1 || {
 			echo "Unable to create ${cloneDir}"
 			exit 1
 		}
-	  }
-	  if touch ${cloneDir}/FOOBAR >/dev/null 2>&1
-	    then
+	}
+
+	if touch ${cloneDir}/FOOBAR >/dev/null 2>&1
+	  then
 		rm ${cloneDir}/FOOBAR
-	    else
+	  else
 		echo "Unable to write in ${cloneDir}"
 		exit 1
-	  fi
-	  if ! which ${transportCmd} >/dev/null 2>&1
-	    then
+	fi
+
+	if ! which ${transportCmd} >/dev/null 2>&1
+	  then
 		echo "Unable to use ${transportCmd}"
 		exit 1
-	  fi
+	fi
 
 	# clone output content from project/testsuites
-	  for d in \
+	for d in \
 		${logDir} \
 		${cacheDir} \
 		${mmtestsDir}
-	    do
+	  do
 		[ -d ${d} ] &&
-			${transportCmd} -avHSP ${d} ${cloneDir}/ >/dev/null 2>&1
-	    done
+		${transportCmd} -avHSP ${d} ${cloneDir}/ >/dev/null 2>&1
+	  done
 
 	# remove mount point
-	  umount ${transportDir} >/dev/null 2>&1
+	umount ${transportDir} >/dev/null 2>&1
 
     else
-
 	echo "Unable to mount ${transportDir}"
 	exit 1
+    fi
 
-  fi
+  }
+
+  return 0
 
 }
 
 function kolekti {
 
   # use aludo wrapper, if available
-    #[ -x /usr/sbin/aludo ] && {
     [ -x /tmp/aludo/bin/aludo ] && {
 	( cd /tmp/aludo ; \
 		source ./aludo.conf ; \
@@ -86,6 +91,7 @@ function kolekti {
 
     [ -z ${oF} ] && subteno
 
+  return 0
 
 }
 
@@ -96,10 +102,12 @@ function subteno {
 	if which ${supportUtil} >/dev/null 2>&1
 	  then
 		${supportUtil} -m -R ${logDir} >/dev/null 2>&1
-#	  else
-#		echo "Cannot find ${supkportUtil}, install ${supportPkg}"
-#		exit 1
+	  else
+		echo "Cannot find ${supportUtil}, install ${supportPkg}"
+		exit 1
 	fi
   }
+
+  return 0
 
 }

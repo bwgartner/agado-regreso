@@ -25,6 +25,7 @@ Test Case/Suite and Reporting automation for performance regression test suites
    - suggest dropping into /tmp
    - validate all settings ( in agado-regreso.conf )
    - enable transport and setup transportDir, suggest creating an NFS mount, in /etc/fstab via serverHost:/path transportDir nfs user,noauto 0 0
+   - decide if you want to restrict the kernel versions to a gated start/last version ( for SLE, see https://scc.suse.com/packages for the available series )
 
 3. Clone the mmtests repository ( git clone https://github.com/gormanm/mmtests )
    - suggest dropping into /tmp ( otherwise you can edit agado-regreso.conf )

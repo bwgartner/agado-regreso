@@ -28,6 +28,8 @@ function prep {
 
   discover
 
+  return 0
+
 }
 
 function discover {
@@ -46,6 +48,8 @@ function discover {
 		;;
   esac
 
+  return 0
+
 }
 
 function osSUSE {
@@ -54,6 +58,8 @@ function osSUSE {
   supportUtilPkg="supportutils"
   supportUtil="supportconfig"
 
+  return 0
+
 }
 
 function osopenSUSE {
@@ -61,6 +67,8 @@ function osopenSUSE {
   pkgMgr="zypper"
   supportUtilPkg="supportutils"
   supportUtil="supportconfig"
+
+  return 0
 
 }
              

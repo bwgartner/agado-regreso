@@ -1,3 +1,4 @@
+config-workload-stream-single
 config-pagealloc-performance
 config-scheduler-sysbench-cpu
 config-workload-usemem

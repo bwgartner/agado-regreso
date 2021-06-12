@@ -28,12 +28,12 @@
     then
 	scopeID="${1}"
     else
-	scopeID=$(uname -r)
+	scopeID=$( uname -r )
         kernelVER=${scopeID%%-default}
-	kernelPKG=$(rpm -aq | grep kernel-default | sort -nr | head -1)
+	kernelPKG=$( rpm -aq | grep kernel-default | sort -gr| head -1 )
 
 	# validate kernel rpm is the one running
-	if $(! echo ${kernelPKG} | grep ${kernelVER} >/dev/null 2>&1)
+	if $( ! echo ${kernelPKG} | grep ${kernelVER} >/dev/null 2>&1 )
 	  then
 		kolekti
 		systemctl reboot && exit 0
@@ -44,7 +44,7 @@
 ## run respective test cases
 
   # mmtests
-  [ $(echo ${mmtests} | tr '[:upper:]' '[:lower:]') = "y" ] && {
+  [ $( echo ${mmtests} | tr '[:upper:]' '[:lower:]' ) = "y" ] && {
 	if [ -d ${mmtestsDir} ]
 	  then
 		  mmtests_tc
@@ -58,15 +58,15 @@
 
 ## prepare system, with updates, for next test runs
 
-  kernelID=$(uname -r)
+  kernelID=$( uname -r )
   kernelVER=${kernelID%%-default}
-  kernelPKG=$(rpm -aq | grep kernel-default | grep ${kernelVER})
+  kernelPKG=$( rpm -aq | grep kernel-default | grep ${kernelVER} )
   kernelBN=${kernelPKG%%-${kernelVER}*}
 
   # prepare for maintenance updates
-    kernelTS=$(rpm -aqi ${kernelBN} | grep "^Source Timestamp:" | sort -nr | head -1 | awk '{print $3}')
+    kernelTS=$( rpm -aqi ${kernelBN} | grep "^Source Timestamp:" | sort -nr | head -1 | awk '{print $3}' )
 
-    [ "${scopeSuf}" = "$(uname -r)" ] && {
+    [ "${scopeSuf}" = "$( uname -r )" ] && {
 	echo ${kernelTS} > ${cacheDir}/KERNELTIMESTAMP
     }
 
@@ -74,45 +74,108 @@
 
     # gate maintenance update types
       MU=""
-      [ $(echo ${muSec=} | tr '[:upper:]' '[:lower:]') = "y" ] && MU+=" security "
-      [ $(echo ${muRec=} | tr '[:upper:]' '[:lower:]') = "y" ] && MU+=" recommended "
+      [ $( echo ${muSec} | tr '[:upper:]' '[:lower:]' ) = "y" ] && MU+=" security "
+      [ $( echo ${muRec} | tr '[:upper:]' '[:lower:]' ) = "y" ] && MU+=" recommended "
 
     # iterate through maintenance updates
-    for muType in ${MU}
-      do
-	kernelTS=$(cat ${cacheDir}/KERNELTIMESTAMP)
-	scopeNext="$(uname -r)-mu-${muType}-${kernelTS}"
-	[ -s ${logDir}/${scopeNext} ] || {
-		zypper lp --date ${kernelTS} --category ${muType} > ${logDir}/${scopeNext} && \
-		zypper patch -y --date ${kernelTS} --category ${muType} >> ${logDir}/${scopeNext} && \
-		echo ${scopeNext} > ${cacheDir}/SCOPE && \
-		kolekti && \
-		systemctl reboot && exit 0
+    scopeNEXT=""
+    [ -n "${MU}" ] && {
+
+	[ ! -e ${cacheDir}/lastSCOPE-${kLast} ] && {
+
+		for muType in ${MU}
+		  do
+			kernelTS=$( cat ${cacheDir}/KERNELTIMESTAMP )
+			scopeNEXT="$( uname -r )-mu-${muType}-${kernelTS}"
+			[ -s ${logDir}/${scopeNEXT} ] || {
+				zypper lp --date ${kernelTS} --category ${muType} > ${logDir}/${scopeNEXT} && \
+				zypper patch -y --date ${kernelTS} --category ${muType} >> ${logDir}/${scopeNEXT} && \
+				echo ${scopeNEXT} > ${cacheDir}/SCOPE && \
+				kolekti && \
+				systemctl reboot && exit 0
+			}
+			scopeNEXT=""
+		  done
 	}
-      done
+    }
 
   # apply kernel upgrade
-    for kernelUP in $(zypper se -s --match-exact ${kernelBN} | awk -F'|' '{print $4}')
+    kernelNEXT=""
+
+    # if configured, check for kernel version starting point
+    [ -n "${kStart}" ] && {
+
+	# verify available
+	$( zypper se -s --match-exact ${kernelBN} | grep ${kStart} >/dev/null 2>&1 ) || {
+		echo "Unable to find or install ${kernelBN} ${kStart}"
+		exit 1
+	}
+
+	# capture starting state
+	$( echo ${kernelPKG} | grep ${kStart} >/dev/null 2>&1 ) && \
+		touch ${cacheDir}/startSCOPE-${kStart}
+
+	# prep for install
+	[ ! -e ${cacheDir}/startSCOPE-${kStart} ] && kernelNEXT="${kStart}"
+	#if [ ! -e ${cacheDir}/startSCOPE-${kStart} ]
+	  #then
+		#zypper install -y ${kernelBN}=${kStart} > ${logDir}/${kernelNEXT} && \
+		#rm -f ${cacheDir}/KERNELTIMESTAMP 2>/dev/null && \
+  		#rm -f ${cacheDir}/SCOPE 2>/dev/null && \
+  		#rm -f ${cacheDir}/TESTCASE 2>/dev/null && \
+		#kolekti && \
+  		#systemctl reboot && exit 0
+	#fi
+
+    }
+
+    # if configured, check for kernel version finish point
+    [ -n "${kLast}" ] && {
+
+	# verify available
+	$( zypper se -s --match-exact ${kernelBN} | grep "${kLast}" >/dev/null 2>&1 ) || {
+		echo "Unable to find or install ${kernelBN} ${kLast}"
+		exit 1
+	}
+
+	# capture finish state
+	$( echo ${kernelPKG} | grep ${kLast} >/dev/null 2>&1 ) && \
+		touch ${cacheDir}/lastSCOPE-${kLast}
+
+    }
+
+    # iterate through kernel version set
+    [ -z "${kernelNEXT}" ] && \
+    for kernelUP in $( zypper se -s --match-exact ${kernelBN} | grep -v "srcpackage" 2>/dev/null | awk -F'|' '{print $4}' )
       do
+
 	echo ${kernelUP}
-	# [ -n "${kernelUP}" ] && continue
 	[ "${kernelUP}" = "Version" ] && continue
-	if $( echo ${kernelUP} | grep ${kernelVER} >/dev/null 2>&1)
+
+	if $( echo ${kernelUP} | grep ${kernelVER} >/dev/null 2>&1 )
 	  then
 		break
 	  else
-		kernelNEXT=${kernelUP}
+		if [ -e ${cacheDir}/lastSCOPE-${kLast} ]
+		  then
+			kernelNEXT=""
+			break
+		  else
+			kernelNEXT=${kernelUP}
+		fi
 	fi
       done
 
   # gate maintenance update types
-    [ $(echo ${kUp=} | tr '[:upper:]' '[:lower:]') = "y" ] &&  {
-	zypper install -y ${kernelBN}=${kernelNEXT} > ${logDir}/${kernelNEXT} && \
+    [ $( echo ${kUp} | tr '[:upper:]' '[:lower:]' ) = "y" ] &&  {
+	[ -z ${scopeNEXT} ] && [ -n "${kernelNEXT}" ] && {
+		zypper install -y ${kernelBN}=${kernelNEXT} > ${logDir}/${kernelNEXT} && \
 		rm -f ${cacheDir}/KERNELTIMESTAMP 2>/dev/null && \
   		rm -f ${cacheDir}/SCOPE 2>/dev/null && \
   		rm -f ${cacheDir}/TESTCASE 2>/dev/null && \
 		kolekti && \
   		systemctl reboot && exit 0
+	}
     }
 
 exit 0

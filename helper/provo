@@ -43,4 +43,6 @@ function mmtests_tc {
 	    done
   }
 
+  return 0
+
 }

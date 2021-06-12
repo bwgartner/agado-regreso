@@ -50,4 +50,7 @@ function mmtests_report {
 
 	  done
   }
+
+  return 0
+
 }
