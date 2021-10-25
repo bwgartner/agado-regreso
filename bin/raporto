@@ -37,5 +37,16 @@
         fi
   }
 
+  # phoronix
+  [ $(echo ${phoronix} | tr '[:upper:]' '[:lower:]') = "y" ] && {
+        if [ -d ${phoronixDir} ]
+          then
+                  phoronix_report
+          else
+		echo "nothing to compare or report for phoronix"
+                exit 1
+        fi
+  }
+
 exit 0
 

@@ -46,3 +46,44 @@ function mmtests_tc {
   return 0
 
 }
+
+function phoronix_tc {
+
+  [ -e ${phoronixTC} ] && {
+	for testCase in $(cat ${phoronixTC})
+	    do
+		cd ${phoronixDir}
+		[ -L ${phoronixLog}/SCOPE ] || ln -s ${cacheDir}/SCOPE ${phoronixLog}/SCOPE
+		[ -L ${phoronixLog}/TESTCASE ] || ln -s ${cacheDir}/TESTCASE ${phoronixLog}/TESTCASE
+
+		# check if test case is already installed
+		  /usr/bin/phoronix-test-suite install ${testCase}
+
+		# check if already run
+		  [ -d ${phoronixLog}/test-results/${testCase}results/system-logs/${scopeSuf} ] && continue
+
+		# denote scope / target test case
+		  echo "${scopeSuf}" > ${phoronixLog}/SCOPE
+		  echo "${testCase}" > ${phoronixLog}/TESTCASE
+		  echo -n "Scope - ${scopeSuf} : " 
+		  echo -n " TestCase - ${testCase} ... "
+
+		# run target test case
+		  OF=${logDir}/phoronix-${testCase}-${scopeSuf}
+		  echo "# $(date +"%Y-%m-%dT%H:%M:%S")" >> ${OF}
+		  echo -e "${testCase}results\n${scopeSuf}" | \
+			/usr/bin/phoronix-test-suite \
+			  batch-run \
+			  ${testCase} \
+			  >> ${OF} 2>&1 && echo "[x]" || echo "[failed]"
+
+		# return to a consistent state for next test case run (via systemd timer)
+		  clone
+		  systemctl reboot && exit 0
+	
+	    done
+  }
+
+  return 0
+
+}

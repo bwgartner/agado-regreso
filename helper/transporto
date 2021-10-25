@@ -54,7 +54,8 @@ function clone {
 	for d in \
 		${logDir} \
 		${cacheDir} \
-		${mmtestsDir}
+		${mmtestsDir} \
+		${phoronixLog}
 	  do
 		[ -d ${d} ] &&
 		${transportCmd} -avHSP ${d} ${cloneDir}/ >/dev/null 2>&1

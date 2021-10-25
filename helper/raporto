@@ -54,3 +54,31 @@ function mmtests_report {
   return 0
 
 }
+
+function phoronix_report {
+
+  [ -e ${phoronixTC} ] && {
+    
+    oDir="$(date +%Y-%m-%dT%H:%M:%S)"
+    [ -d ${phoronixLog}/${oDir} ] || mkdir -p ${phoronixLog}/${oDir}
+
+    # per test case with graphics in PDF format
+    cd ${phoronixLog}
+    for testCase in $(cat ${phoronixTC})
+      do
+
+	[ -d ${phoronixLog}/test-results/${testCase}results/system-logs ] && {
+		echo -n "Report : ${testCase} ... "
+		cd ${phoronixLog}
+		phoronix-test-suite result-file-to-pdf ${testCase}results 2>/dev/null && {
+			echo "[x]"
+			cp -p ~/${testCase}results.pdf ${oDir}/
+		} || echo "[failed]"
+	}
+
+      done
+  }
+
+  return 0
+
+}

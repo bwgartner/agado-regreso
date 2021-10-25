@@ -54,6 +54,17 @@
 	fi
   }
 
+  # phoronix
+  [ $( echo ${phoronix} | tr '[:upper:]' '[:lower:]' ) = "y" ] && {
+	if [ -d ${phoronixDir} ]
+	  then
+		  phoronix_tc
+	  else
+		echo "Try git clone phoronix, adjust configuration for location"
+		exit 1
+	fi
+  }
+
   # next test suite (TBD)
 
 ## prepare system, with updates, for next test runs
@@ -92,7 +103,6 @@
 				unset ${RC}
 				zpm="zypper patch -y --date ${kernelTS} --category ${muType}"
 				RC=$(${zpm} >> ${logDir}/${scopeNEXT})
-				# if just zypper/package manager updates, re-run
 				[ ${RC} -eq 103 ] && $(${zpm} >> ${logDir}/${scopeNEXT})
 				echo ${scopeNEXT} > ${cacheDir}/SCOPE
 				kolekti
