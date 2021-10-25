@@ -89,9 +89,13 @@
 			scopeNEXT="$( uname -r )-mu-${muType}-${kernelTS}"
 			[ -s ${logDir}/${scopeNEXT} ] || {
 				zypper lp --date ${kernelTS} --category ${muType} > ${logDir}/${scopeNEXT} && \
-				zypper patch -y --date ${kernelTS} --category ${muType} >> ${logDir}/${scopeNEXT} && \
-				echo ${scopeNEXT} > ${cacheDir}/SCOPE && \
-				kolekti && \
+				unset ${RC}
+				zpm="zypper patch -y --date ${kernelTS} --category ${muType}"
+				RC=$(${zpm} >> ${logDir}/${scopeNEXT})
+				# if just zypper/package manager updates, re-run
+				[ ${RC} -eq 103 ] && $(${zpm} >> ${logDir}/${scopeNEXT})
+				echo ${scopeNEXT} > ${cacheDir}/SCOPE
+				kolekti
 				systemctl reboot && exit 0
 			}
 			scopeNEXT=""
@@ -117,15 +121,6 @@
 
 	# prep for install
 	[ ! -e ${cacheDir}/startSCOPE-${kStart} ] && kernelNEXT="${kStart}"
-	#if [ ! -e ${cacheDir}/startSCOPE-${kStart} ]
-	  #then
-		#zypper install -y ${kernelBN}=${kStart} > ${logDir}/${kernelNEXT} && \
-		#rm -f ${cacheDir}/KERNELTIMESTAMP 2>/dev/null && \
-  		#rm -f ${cacheDir}/SCOPE 2>/dev/null && \
-  		#rm -f ${cacheDir}/TESTCASE 2>/dev/null && \
-		#kolekti && \
-  		#systemctl reboot && exit 0
-	#fi
 
     }
 
@@ -173,7 +168,7 @@
 		rm -f ${cacheDir}/KERNELTIMESTAMP 2>/dev/null && \
   		rm -f ${cacheDir}/SCOPE 2>/dev/null && \
   		rm -f ${cacheDir}/TESTCASE 2>/dev/null && \
-		kolekti && \
+		kolekti
   		systemctl reboot && exit 0
 	}
     }
