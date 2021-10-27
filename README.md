@@ -13,7 +13,7 @@ Test Case/Suite and Reporting automation for performance regression test suites
 
 - Only tested with
   - mmtests suite
-  - phoronix suite ( WIP )
+  - phoronix suite
   - others may be added over time
 
 ## Process on target System Under Test ( SUT )
@@ -23,7 +23,7 @@ Test Case/Suite and Reporting automation for performance regression test suites
    - ensure update repos are disabled during installation and also post-install
      - zypper modifyrepo -d repoName
    - install additional packages
-     - zypper install which wget git-core gcc gcc-c++ rsync supportutils
+     - zypper install which wget git-core gcc gcc-c++ rsync supportutils unzip
 
 2. Clone this GitHub repository
    - git clone https://github.com/bwgartner/agado-regreso
@@ -49,8 +49,9 @@ Test Case/Suite and Reporting automation for performance regression test suites
      - Validate ( in agado-regreso.conf ) that phoronx is enabled and settings match locations )
      - cd /tmp/phoronix-test-suite
        - ./install-sh
+       - install additional packages
+         - zypper install php7 php7-zip php7-openssl php-gd gcc gcc-c++ make autoconf
        - phoronix-test-suite system-info
-         - zypper install php7 php7-zip php7-openssl php-gd
        - phoronix-test-suite list-tests
          - select the desired test cases
            - see example set in /tmp/agado-regreso/cache/phoronix-testCase.list
@@ -64,34 +65,34 @@ Test Case/Suite and Reporting automation for performance regression test suites
          - Prompt for test description (N)
          - Prompt for saved results (Y)
          - Run all test options (Y)
-     - install additional packages
-       - zypper install gcc gcc-c++ make autoconf
      - validate with a sample run
        - phoronix-test-suite benchmark smallpt
 
 4. Do a manual wrapper run
    - cd /tmp/agado-regreso ; sh -x ./bin/agado-regreso
-   - which will run the first test case
+   - which will run the first test case scenario for this installation
    - collect results
    - if transport is enabled, will mount, clone, umount
    - by default, system will reboot ( so that each test starts from a similar state )
 
-5. Setup automation to continually run other test cases, then apply maintenance updates ( in security/recommended categories ) and then upgrade the kernel
-   - cp /tmp/agado-regreso/systemd/ files to /etc/systemd/system
-   - systemctl enable --now agado-regreso.timer
+5. Setup automation
+   - upon reboot run next test case
+     - cp /tmp/agado-regreso/systemd/agado-regreso* files to /etc/systemd/system
+     - systemctl enable --now agado-regreso.timer
+   - re-enable update repos and prep for next iteration ( to upgrade kernel, apply maintenance updates ( in security/recommended categories )
+     - zypper modifyrepo -e repoName
+   - prep for next iteration
+     - rm /tmp/agado-regreso/cache/SCOPE
+     - rm /tmp/agado-regreso/cache/TESTCASE
+     - rm /tmp/agado-regreso/cache/KERNELTIMESTAMP
    - invoke /usr/bin/sh -c 'cd /tmp/agado-regreso && ./bin/ripeti'
 
-6. Re-enable update repos and prep for next iteration
-   - rm /tmp/agado-regreso/cache/SCOPE
-   - rm /tmp/agado-regreso/cache/TESTCASE
-   - rm /tmp/agado-regreso/cache/KERNELTIMESTAMP
-   - reboot, and SUT should upgrade the kernel, reboot and start the test cycle over
-
-7. When these cycles are completed, you should find test cases run across
+6. When these cycles are completed, you should find test cases run across
    - base kernel installation
    - maintenance update for security patches ( since no patches are enabled, this is just a re-run )
    - maintenance update for recommended patches ( since no patches are enabled, this is just a re-run )
    - kernel upgrade
+   - look in /tmp/agado-regreso/log to see status at any point
 
 ## Process on reporting node
 
