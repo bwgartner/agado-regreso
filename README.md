@@ -23,7 +23,7 @@ Test Case/Suite and Reporting automation for performance regression test suites
    - ensure update repos are disabled during installation and also post-install
      - zypper modifyrepo -d repoName
    - install additional packages
-     - zypper install which wget git-core gcc gcc-c++ rsync supportutils unzip
+     - zypper install which wget git-core gcc gcc-c++ rsync supportutils unzip sudo
 
 2. Clone this GitHub repository
    - git clone https://github.com/bwgartner/agado-regreso
@@ -50,7 +50,7 @@ Test Case/Suite and Reporting automation for performance regression test suites
      - cd /tmp/phoronix-test-suite
        - ./install-sh
        - install additional packages
-         - zypper install php7 php7-zip php7-openssl php-gd gcc gcc-c++ make autoconf
+         - zypper install php7 php7-zip php7-openssl php-gd gcc gcc-c++ make autoconf uuidd libuuid-devel libxml2-devel
        - phoronix-test-suite system-info
        - phoronix-test-suite list-tests
          - select the desired test cases
