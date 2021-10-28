@@ -70,6 +70,8 @@ function phoronix_report {
 	[ -d ${phoronixLog}/test-results/${testCase}results/system-logs ] && {
 		echo -n "Report : ${testCase} ... "
 		cd ${phoronixLog}
+		echo "n" | phoronix-test-suite auto-sort-result-file SORT_BY=dat
+e-desc ${testCase}results
 		phoronix-test-suite result-file-to-pdf ${testCase}results 2>/dev/null && {
 			echo "[x]"
 			cp -p ~/${testCase}results.pdf ${oDir}/
