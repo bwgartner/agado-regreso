@@ -12,35 +12,43 @@
 function mmtests_tc {
 
   [ -e ${mmtestsTC} ] && {
-	for testCase in $(cat ${mmtestsTC})
+	while read -r testCase tcc
 	    do
-		cd ${mmtestsDir}
-		[ -L ${mmtestsLog}/SCOPE ] || ln -s ${cacheDir}/SCOPE ${mmtestsLog}/SCOPE
-		[ -L ${mmtestsLog}/TESTCASE ] || ln -s ${cacheDir}/TESTCASE ${mmtestsLog}/TESTCASE
+		[ ${tcc} -le 0 ] && continue
+		tcCount=0
+		while [[ ${tcc} -gt ${tcCount} ]]
+		    do
+			tcCount=$((tcCount+1))
 
-		# check if already run
-		  [ -d ${mmtestsLog}/${testCase}/${scopeSuf} ] && continue
+			cd ${mmtestsDir}
+			[ -L ${mmtestsLog}/SCOPE ] || ln -s ${cacheDir}/SCOPE ${mmtestsLog}/SCOPE
+			[ -L ${mmtestsLog}/TESTCASE ] || ln -s ${cacheDir}/TESTCASE ${mmtestsLog}/TESTCASE
 
-		# denote scope / target test case
-		  echo "${scopeSuf}" > ${mmtestsLog}/SCOPE
-		  echo "${testCase}" > ${mmtestsLog}/TESTCASE
-		  echo -n "Scope - ${scopeSuf} : " 
-		  echo -n " TestCase - ${testCase} ... "
+			# check if already run
+		  	[ -d ${mmtestsLog}/${testCase}/${tcPrefix}${tcCount}-${scopeSuf} ] && continue
 
-		# run target test case
-		  OF=${logDir}/mmtests-${testCase}-${scopeSuf}
-		  echo "# $(date +"%Y-%m-%dT%H:%M:%S")" >> ${OF}
-		  ${mmtestsDir}/run-mmtests.sh \
+			# denote scope / target test case
+		  	echo "${scopeSuf}" > ${mmtestsLog}/SCOPE
+		  	echo "${testCase}" > ${mmtestsLog}/TESTCASE
+		  	echo -n "Scope - ${tcPrefix}${tcCount}-${scopeSuf} : " 
+		  	echo -n " TestCase - ${testCase} ... "
+
+			# run target test case
+		  	OF=${logDir}/mmtests-${testCase}-${tcPrefix}${tcCount}-${scopeSuf}
+		  	echo "# $(date +"%Y-%m-%dT%H:%M:%S")" >> ${OF}
+		  	${mmtestsDir}/run-mmtests.sh \
 			  --no-monitor \
 			  --config configs/${testCase} \
-			  ${testCase}/${scopeSuf} \
+			  ${testCase}/${tcPrefix}${tcCount}-${scopeSuf} \
 			  >> ${OF} 2>&1 && echo "[x]" || echo "[failed]"
 
-		# return to a consistent state for next test case run (via systemd timer)
-		  clone
-		  systemctl reboot && exit 0
+			# return to a consistent state for next test case run (via systemd timer)
+		  	clone
+		  	systemctl reboot && exit 0
+
+		    done
 	
-	    done
+	    done < ${mmtestsTC}
   }
 
   return 0
@@ -50,38 +58,46 @@ function mmtests_tc {
 function phoronix_tc {
 
   [ -e ${phoronixTC} ] && {
-	for testCase in $(cat ${phoronixTC})
+	while read -r testCase tcc
 	    do
-		cd ${phoronixDir}
-		[ -L ${phoronixLog}/SCOPE ] || ln -s ${cacheDir}/SCOPE ${phoronixLog}/SCOPE
-		[ -L ${phoronixLog}/TESTCASE ] || ln -s ${cacheDir}/TESTCASE ${phoronixLog}/TESTCASE
+		[ ${tcc} -le 0 ] && continue
+		tcCount=0
+		while [[ ${tcc} -gt ${tcCount} ]]
+		    do
+			tcCount=$((tcCount+1))
 
-		# check if test case is already installed
-		  /usr/bin/phoronix-test-suite install ${testCase}
+			cd ${phoronixDir}
+			[ -L ${phoronixLog}/SCOPE ] || ln -s ${cacheDir}/SCOPE ${phoronixLog}/SCOPE
+			[ -L ${phoronixLog}/TESTCASE ] || ln -s ${cacheDir}/TESTCASE ${phoronixLog}/TESTCASE
 
-		# check if already run
-		  [ -d ${phoronixLog}/test-results/${testCase}results/system-logs/${scopeSuf} ] && continue
+			# check if test case is already installed
+		  	/usr/bin/phoronix-test-suite install ${testCase}
 
-		# denote scope / target test case
-		  echo "${scopeSuf}" > ${phoronixLog}/SCOPE
-		  echo "${testCase}" > ${phoronixLog}/TESTCASE
-		  echo -n "Scope - ${scopeSuf} : " 
-		  echo -n " TestCase - ${testCase} ... "
+			# check if already run
+		  	[ -d ${phoronixLog}/test-results/${testCase}results/system-logs/${tcPrefix}${tcCount}-${scopeSuf} ] && continue
 
-		# run target test case
-		  OF=${logDir}/phoronix-${testCase}-${scopeSuf}
-		  echo "# $(date +"%Y-%m-%dT%H:%M:%S")" >> ${OF}
-		  echo -e "${testCase}results\n${scopeSuf}" | \
+			# denote scope / target test case
+		  	echo "${scopeSuf}" > ${phoronixLog}/SCOPE
+		  	echo "${testCase}" > ${phoronixLog}/TESTCASE
+		  	echo -n "Scope - ${tcPrefix}${tcCount}-${scopeSuf} : " 
+		  	echo -n " TestCase - ${testCase} ... "
+
+			# run target test case
+		  	OF=${logDir}/phoronix-${testCase}-${tcPrefix}${tcCount}-${scopeSuf}
+		  	echo "# $(date +"%Y-%m-%dT%H:%M:%S")" >> ${OF}
+		  	echo -e "${testCase}results\n${tcPrefix}${tcCount}-${scopeSuf}" | \
 			/usr/bin/phoronix-test-suite \
 			  batch-run \
 			  ${testCase} \
 			  >> ${OF} 2>&1 && echo "[x]" || echo "[failed]"
 
-		# return to a consistent state for next test case run (via systemd timer)
-		  clone
-		  systemctl reboot && exit 0
+			# return to a consistent state for next test case run (via systemd timer)
+		  	clone
+		  	systemctl reboot && exit 0
 	
-	    done
+		    done
+	
+	    done < ${phoronixTC}
   }
 
   return 0

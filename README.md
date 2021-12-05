@@ -35,7 +35,6 @@ Test Case/Suite and Reporting automation for performance regression test suites
 3. Prepare test case suites
    - Clone the mmtests repository ( git clone https://github.com/gormanm/mmtests )
      - suggest dropping into /tmp ( otherwise you can edit agado-regreso.conf )
-     - FixMe install additional packages - wget, git-core, gcc, gcc-c++, rsync, supportutils
      - select the desired test cases
        - see example set in /tmp/agado-regreso/cache/mmtests-testCase.list
        - place your desired list/version in ${mmtestsLog}/testCase.list )

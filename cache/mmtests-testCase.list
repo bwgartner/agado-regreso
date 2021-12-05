@@ -1,6 +1,6 @@
-config-workload-stream-single
-config-pagealloc-performance
-config-scheduler-sysbench-cpu
-config-workload-usemem
-config-io-dbench4-async
-config-io-bonnie-dir-async
+config-workload-stream-single 2
+config-pagealloc-performance 1
+config-scheduler-sysbench-cpu 1
+config-workload-usemem 1
+config-io-dbench4-async 1
+config-io-bonnie-dir-async 1

@@ -1,5 +1,7 @@
-smallpt
-t-test1
-lzbench
-pmbench
-ramspeed
+smallpt 2
+t-test1 1
+lzbench 1
+pmbench 1
+ramspeed 1
+hackbench 0
+stress-ng 1

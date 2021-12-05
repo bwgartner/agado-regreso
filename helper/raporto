@@ -29,8 +29,8 @@ function mmtests_report {
 	} || echo "[failed]"
 
     # per test case with graphics
-	for testCase in $(cat ${mmtestsTC})
-	  do
+        while read -r testCase tcc
+          do
 		if [ $(ls ${mmtestsLog}/${testCase} | wc -l 2>/dev/null) -gt 1 ]
 		  then
 			echo -n "Report : ${testCase} ... "
@@ -48,7 +48,7 @@ function mmtests_report {
 			#break
 		fi
 
-	  done
+	  done < ${mmtestsTC}
   }
 
   return 0
@@ -64,7 +64,7 @@ function phoronix_report {
 
     # per test case with graphics in PDF format
     cd ${phoronixLog}
-    for testCase in $(cat ${phoronixTC})
+    while read -r testCase tcc
       do
 
 	[ -d ${phoronixLog}/test-results/${testCase}results/system-logs ] && {
@@ -78,7 +78,7 @@ e-desc ${testCase}results
 		} || echo "[failed]"
 	}
 
-      done
+      done < ${phoronixTC}
   }
 
   return 0
