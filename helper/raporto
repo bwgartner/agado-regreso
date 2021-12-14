@@ -20,7 +20,7 @@ function mmtests_report {
     # general (test table) overview
       echo -n "Report : summary ... "
       [ -d ${oDir} ] || mkdir ${oDir}
-      ../../../compare-kernels.sh \
+      ../../compare-kernels.sh \
 	--format html \
 	--output-dir ${oDir} \
 	> ${oDir}/index.html 2> ${oDir}/stderr && {
@@ -36,7 +36,7 @@ function mmtests_report {
 			echo -n "Report : ${testCase} ... "
 			cd ${mmtestsLog}/${testCase}
 			[ -d ${oDir} ] || mkdir ${oDir}
-			../../../../compare-kernels.sh \
+			../../../compare-kernels.sh \
 				--format html \
 				--output-dir ${oDir} \
 				> ${oDir}/index.html 2> ${oDir}/stderr && {
@@ -70,8 +70,7 @@ function phoronix_report {
 	[ -d ${phoronixLog}/test-results/${testCase}results/system-logs ] && {
 		echo -n "Report : ${testCase} ... "
 		cd ${phoronixLog}
-		echo "n" | phoronix-test-suite auto-sort-result-file SORT_BY=dat
-e-desc ${testCase}results
+		echo "n" | phoronix-test-suite auto-sort-result-file SORT_BY=date-desc ${testCase}results
 		phoronix-test-suite result-file-to-pdf ${testCase}results 2>/dev/null && {
 			echo "[x]"
 			cp -p ~/${testCase}results.pdf ${oDir}/

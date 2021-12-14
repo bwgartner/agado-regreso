@@ -106,7 +106,8 @@ Test Case/Suite and Reporting automation for performance regression test suites
    - mmtest
      - git clone mmtest repo
        - install the following packages
-         - zypper install wget gnuplot perl-List-BinarySearch perl-List-BinarySearch-XS perl-Cpanel-JSON-X R-rjson
+         - zypper install wget gnuplot perl-List-BinarySearch-XS perl-List-BinarySearch-XS perl-Cpanel-JSON-XS R-jsonlite
+         - cpan install List::BinarySearch File::Slurp
      - adjust agado-regreso.conf file
        - to match where mmtest landed ( mmtestsDir, mmtestsLog )
 
@@ -114,7 +115,7 @@ Test Case/Suite and Reporting automation for performance regression test suites
      - During SLE install or post-install : enable Web and Scripting Module
      - git clone phoronix-test-suite repo
        - install the following packages
-         - zypper install php7 php7-zip php7-openssl php-gd
+         - zypper install php7 php7-zip php7-openssl php-gd php7-dom php7-json dejavu-fonts
      - adjust agado-regreso.conf file
        - to match where mmtest landed ( phoronixDir, phoronixLog )
 2. Run reports
