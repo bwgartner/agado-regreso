@@ -50,7 +50,7 @@ Test Case/Suite and Reporting automation for performance regression test suites
      - `cd /tmp/phoronix-test-suite`
        - `./install-sh`
        - install additional packages
-         - `zypper install xdg-utils uuidd php7 php7-dom php7-zip php7-openssl php-gd make libxml2-devel libuuid-devel gcc gcc-c++ autoconf`
+         - `zypper install xdg-utils uuidd php7 php7-dom php7-json php7-zip php7-openssl php-gd make libxml2-devel libuuid-devel gcc gcc-c++ autoconf`
        - `phoronix-test-suite system-info`
        - `phoronix-test-suite list-tests`
          - select the desired test cases
