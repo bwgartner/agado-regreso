@@ -78,7 +78,7 @@ Test Case/Suite and Reporting automation for performance regression test suites
 5. Setup automation
    - upon reboot run next test case
      - `cp /tmp/agado-regreso/systemd/agado-regreso* /etc/systemd/system`
-     - `systemctl enable --now agado-regreso.timer`
+     - `systemctl enable agado-regreso.timer`
    - re-enable update repos and prep for next iteration
      - to upgrade kernel, to apply recommended maintenance updates _muRec="Y"_, to apply security maintenance updates _muSec="Y"_
      - `zypper modifyrepo -e <repoName>`
