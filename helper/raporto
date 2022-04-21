@@ -31,6 +31,7 @@ function mmtests_report {
     # per test case with graphics
         while read -r testCase tcc
           do
+		[ ${tcc} -le 0 ] && continue
 		if [ $(ls ${mmtestsLog}/${testCase} | wc -l 2>/dev/null) -gt 1 ]
 		  then
 			echo -n "Report : ${testCase} ... "
@@ -67,6 +68,7 @@ function phoronix_report {
     while read -r testCase tcc
       do
 
+	[ ${tcc} -le 0 ] && continue
 	[ -d ${phoronixLog}/test-results/${testCase}results/system-logs ] && {
 		echo -n "Report : ${testCase} ... "
 		cd ${phoronixLog}
